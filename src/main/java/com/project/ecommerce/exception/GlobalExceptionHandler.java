@@ -16,46 +16,75 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request){
+    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request){
+    //public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request){
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
-        Map<String, Object> body = new HashMap<>();
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "VALIDATION_ERROR",
+                "Invalid input data",
+                request.getRequestURI(),
+                errors
+        );
+//        Map<String, Object> body = new HashMap<>();
+//
+//        body.put("timestamp", LocalDateTime.now());
+//        body.put("status", HttpStatus.BAD_REQUEST.value());
+//        body.put("error", "Validation Error");
+//        body.put("errors", errors);
+//        body.put("path", request.getRequestURI());
 
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation Error");
-        body.put("errors", errors);
-        body.put("path", request.getRequestURI());
-
-        return ResponseEntity.badRequest().body(body);
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request){
-        Map<String, Object> body = new HashMap<>();
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request){
 
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("erorr", "Not found");
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "RESOURCE_NOT_FOUND",
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+    //public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request){
+//        Map<String, Object> body = new HashMap<>();
+//
+//        body.put("timestamp", LocalDateTime.now());
+//        body.put("status", HttpStatus.NOT_FOUND.value());
+//        body.put("erorr", "Not found");
+//        body.put("message", ex.getMessage());
+//        body.put("path", request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.FOUND).body(body);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex, HttpServletRequest request){
-        Map<String, Object> body = new HashMap<>();
+    public ResponseEntity<ErrorResponse> handleGeneral(Exception ex, HttpServletRequest request){
 
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        body.put("error", "Internal Server Error");
-        body.put("message", ex.getMessage());
-        body.put("path", request.getRequestURI());
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "INTERNAL_SERVER_ERROR",
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+//    public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex, HttpServletRequest request){
+//        Map<String, Object> body = new HashMap<>();
+//
+//        body.put("timestamp", LocalDateTime.now());
+//        body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+//        body.put("error", "Internal Server Error");
+//        body.put("message", ex.getMessage());
+//        body.put("path", request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
 
