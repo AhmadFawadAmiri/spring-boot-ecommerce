@@ -29,7 +29,7 @@ public class Product {
     @Column(nullable = false)
     private int stockQuantity;
     @ManyToOne
-    //@JsonBackReference
+    @JsonBackReference
     @JoinColumn(name = "category_id")
     private Category category; // FK
     private LocalDateTime createdAt;

@@ -22,6 +22,6 @@ public class Category {
     @Column(nullable = false, unique = true)
     private String name;
     @OneToMany(mappedBy = "category")
-    //@JsonManagedReference
+    @JsonManagedReference
     private List<Product> products;
 }
