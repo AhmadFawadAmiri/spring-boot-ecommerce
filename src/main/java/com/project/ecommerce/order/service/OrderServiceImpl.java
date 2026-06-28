@@ -1,14 +1,19 @@
-package com.project.ecommerce.order.orderService;
+package com.project.ecommerce.order.service;
 
-import com.project.ecommerce.order.OrderStatus;
+import com.project.ecommerce.cart.repository.CartItemRepository;
+import com.project.ecommerce.order.dto.response.OrderResponse;
+import com.project.ecommerce.order.entity.OrderStatus;
 import com.project.ecommerce.order.entity.Order;
 import com.project.ecommerce.order.entity.OrderItem;
+import com.project.ecommerce.order.mapper.OrderMapper;
 import com.project.ecommerce.order.repository.OrderRepository;
 import com.project.ecommerce.product.entity.Product;
 import com.project.ecommerce.product.repository.ProductRepository;
-import com.project.ecommerce.user.entity.Cart;
-import com.project.ecommerce.user.entity.CartItem;
-import com.project.ecommerce.user.repository.CartRepository;
+import com.project.ecommerce.cart.entity.Cart;
+import com.project.ecommerce.cart.entity.CartItem;
+import com.project.ecommerce.cart.repository.CartRepository;
+import com.project.ecommerce.user.entity.User;
+import com.project.ecommerce.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,23 +27,29 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+   // private final UserRepository userRepository;
+    private final OrderMapper orderMapper;
+    private final CartItemRepository cartItemRepository;
 
-    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, OrderMapper orderMapper, CartItemRepository cartItemRepository) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+       // this.userRepository = userRepository;
+        this.orderMapper = orderMapper;
+        this.cartItemRepository = cartItemRepository;
     }
 
     @Transactional
     @Override
-    public Order createOrderFromCart(Long userId) {
-        //1. Get cart
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(()->new EntityNotFoundException("Cart not found"));
+    public OrderResponse checkout(Long userId) {
+        //1. Get user and cart
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(()->new EntityNotFoundException("User not found"));
+        Cart cart = getCart(userId);
+        validateCart(cart);
         //2. Create order
-        Order order = new Order();
-        order.setUser(cart.getUser());
-        order.setStatus(OrderStatus.PENDING);
+        Order order = createOrder(cart.getUser());
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
@@ -48,23 +59,29 @@ public class OrderServiceImpl implements OrderService {
             Product product = cartItem.getProduct();
 
             // Stock validation
-            if(product.getStockQuantity() < cartItem.getQuantity()){
-                throw new RuntimeException("Not enough stock for product"+product.getName());
-            }
+            validateStock(product, cartItem.getQuantity());
+//            if(product.getStockQuantity() < cartItem.getQuantity()){
+//                throw new RuntimeException("Not enough stock for product"+product.getName());
+//            }
             // reduce stock
-            product.setStockQuantity(product.getStockQuantity()-cartItem.getQuantity());
-            productRepository.save(product);
-            // Create order item
-            OrderItem orderItem = new OrderItem();
-            orderItem.setProduct(product);
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPriceAtPurchase(cartItem.getProduct().getPrice());
-            orderItem.setOrder(order);
+            reduceStock(product, cartItem.getQuantity());
+            // create order item
+            OrderItem orderItem =  createOrderItem( order, cartItem);
+//            product.setStockQuantity(product.getStockQuantity()-cartItem.getQuantity());
+//            productRepository.save(product);
+//            // Create order item
+//            OrderItem orderItem = new OrderItem();
+//            orderItem.setOrder(order);
+//            orderItem.setProduct(product);
+//            orderItem.setQuantity(cartItem.getQuantity());
+//            orderItem.setPriceAtPurchase(cartItem.getProduct().getPrice());
 
             orderItems.add(orderItem);
 
             // Total calculation
-            total.add(product.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+            total = calculateTotal(total, product.getPrice(), cartItem.getQuantity());
+//                    total.add(product.getPrice()
+//                    .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
         }
 
         //4. finalize order
@@ -75,9 +92,59 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         //6. clear cart
-        cart.getCartItems().clear();
+        //cart.getCartItems().clear();
+        cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.save(cart);
 
-        return savedOrder;
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    private Cart getCart(Long userId){
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(()->new EntityNotFoundException("Cart not found"));
+//        if(cart.getCartItems().isEmpty()){
+//            throw new RuntimeException("Car is empty");
+//        }
+        return cart;
+    }
+
+    private Order createOrder(User user){
+        Order order = new Order();
+        order.setUser(user);
+        order.setStatus(OrderStatus.CREATED);
+        return order;
+    }
+
+    private void validateStock(Product product, int quantity){
+        if(product.getStockQuantity() < quantity){
+            throw new RuntimeException("Not enough stock for product"+product.getName());
+        }
+    }
+
+    private BigDecimal calculateTotal(BigDecimal total, BigDecimal price, int quantity){
+        return total.add(price
+                .multiply(BigDecimal.valueOf(quantity)));
+    }
+
+    private OrderItem createOrderItem(Order order, CartItem cartItem){
+        // Create order item
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrder(order);
+        orderItem.setProduct(cartItem.getProduct());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setPriceAtPurchase(cartItem.getProduct().getPrice());
+
+        return orderItem;
+    }
+
+    private void reduceStock(Product product, int quantity){
+        product.setStockQuantity(product.getStockQuantity()-quantity);
+        productRepository.save(product);
+    }
+
+    private void validateCart(Cart cart){
+        if(cart.getCartItems().isEmpty()){
+            throw new RuntimeException("Car is empty");
+        }
     }
 }

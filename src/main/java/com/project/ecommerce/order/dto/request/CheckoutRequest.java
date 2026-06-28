@@ -1,4 +1,5 @@
 package com.project.ecommerce.order.dto.request;
 
-public class CheckouRequest {
+public class CheckoutRequest {
+    private Long id;
 }

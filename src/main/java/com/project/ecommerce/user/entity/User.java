@@ -1,6 +1,7 @@
 package com.project.ecommerce.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.ecommerce.cart.entity.Cart;
 import com.project.ecommerce.user.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

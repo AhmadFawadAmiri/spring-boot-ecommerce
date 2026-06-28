@@ -1,7 +1,8 @@
 package com.project.ecommerce.order.controller;
 
+import com.project.ecommerce.order.dto.response.OrderResponse;
 import com.project.ecommerce.order.entity.Order;
-import com.project.ecommerce.order.orderService.OrderService;
+import com.project.ecommerce.order.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +18,8 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/{userId}/checkout")
-    public ResponseEntity<Order> checkout(@PathVariable Long userId){
-        return ResponseEntity.ok(orderService.createOrderFromCart(userId));
+    @PostMapping("/checkout/{userId}")
+    public ResponseEntity<OrderResponse> checkout(@PathVariable Long userId){
+        return ResponseEntity.ok(orderService.checkout(userId));
     }
 }

@@ -57,10 +57,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex, HttpServletRequest request){
 
+        log.error("Unexpected error", ex);
+
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "INTERNAL_SERVER_OCCURRED",
+                "INTERNAL_SERVER_ERROR",
                 ex.getMessage(),
                 request.getRequestURI(),
                 null

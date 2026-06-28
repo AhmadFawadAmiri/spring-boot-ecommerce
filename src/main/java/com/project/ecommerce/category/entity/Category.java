@@ -1,6 +1,7 @@
-package com.project.ecommerce.product.entity;
+package com.project.ecommerce.category.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.project.ecommerce.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

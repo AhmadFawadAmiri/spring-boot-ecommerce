@@ -1,4 +1,4 @@
-package com.project.ecommerce.user.service;
+package com.project.ecommerce.cart.service;
 
 import com.project.ecommerce.cart.entity.Cart;
 

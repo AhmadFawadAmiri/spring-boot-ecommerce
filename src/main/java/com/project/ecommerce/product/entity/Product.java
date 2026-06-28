@@ -1,6 +1,7 @@
 package com.project.ecommerce.product.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.project.ecommerce.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +29,8 @@ public class Product {
     private BigDecimal price;
     @Column(nullable = false)
     private int stockQuantity;
+    @Version
+    private Long version;
     @ManyToOne
     @JsonBackReference
     @JoinColumn(name = "category_id")

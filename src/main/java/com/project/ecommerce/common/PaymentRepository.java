@@ -1,6 +1,5 @@
-package com.project.ecommerce.order.repository;
+package com.project.ecommerce.common;
 
-import com.project.ecommerce.order.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -2,14 +2,13 @@ package com.project.ecommerce.product.mapper;
 
 import com.project.ecommerce.product.dto.request.ProductRequest;
 import com.project.ecommerce.product.dto.response.ProductResponse;
-import com.project.ecommerce.product.entity.Category;
+import com.project.ecommerce.category.entity.Category;
 import com.project.ecommerce.product.entity.Product;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProductMapper {
     public Product toEntity(ProductRequest request, Category category){
-
         Product product = new Product();
         product.setName(request.getName());
         product.setDescription(request.getDescription());
@@ -20,7 +19,6 @@ public class ProductMapper {
     }
 
     public ProductResponse toResponse(Product product){
-
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
         response.setName(product.getName());
@@ -34,7 +32,6 @@ public class ProductMapper {
     }
 
     public void updateEntity(Product existing, ProductRequest request, Category category){
-
         existing.setName(request.getName());
         existing.setDescription(request.getDescription());
         existing.setPrice(request.getPrice());

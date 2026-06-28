@@ -1,7 +1,7 @@
-package com.project.ecommerce.user.controller;
+package com.project.ecommerce.cart.controller;
 
 import com.project.ecommerce.cart.entity.Cart;
-import com.project.ecommerce.user.service.CartService;
+import com.project.ecommerce.cart.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
