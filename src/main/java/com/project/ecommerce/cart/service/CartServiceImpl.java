@@ -2,8 +2,8 @@ package com.project.ecommerce.user.service;
 
 import com.project.ecommerce.product.entity.Product;
 import com.project.ecommerce.product.repository.ProductRepository;
-import com.project.ecommerce.user.entity.Cart;
-import com.project.ecommerce.user.entity.CartItem;
+import com.project.ecommerce.cart.entity.Cart;
+import com.project.ecommerce.cart.entity.CartItem;
 import com.project.ecommerce.user.entity.User;
 import com.project.ecommerce.user.repository.CartItemRepository;
 import com.project.ecommerce.user.repository.CartRepository;

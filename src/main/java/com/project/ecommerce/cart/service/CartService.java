@@ -1,6 +1,6 @@
 package com.project.ecommerce.user.service;
 
-import com.project.ecommerce.user.entity.Cart;
+import com.project.ecommerce.cart.entity.Cart;
 
 
 public interface CartService {

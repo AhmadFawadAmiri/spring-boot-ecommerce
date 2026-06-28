@@ -1,5 +1,5 @@
 package com.project.ecommerce.order;
 
 public enum OrderStatus {
-    PENDING, PAID, CANCELLED
+    CREATE, PENDING, PAID, CANCELLED, SHIPPED
 }
