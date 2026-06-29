@@ -32,7 +32,7 @@ public class Product {
     @Version
     private Long version;
     @ManyToOne
-    @JsonBackReference
+    //@JsonBackReference
     @JoinColumn(name = "category_id")
     private Category category; // FK
     private LocalDateTime createdAt;

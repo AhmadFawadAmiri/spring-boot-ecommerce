@@ -5,7 +5,7 @@ import com.project.ecommerce.product.dto.response.ProductResponse;
 import com.project.ecommerce.category.entity.Category;
 import com.project.ecommerce.product.entity.Product;
 import com.project.ecommerce.product.mapper.ProductMapper;
-import com.project.ecommerce.product.repository.CategoryRepository;
+import com.project.ecommerce.category.repository.CategoryRepository;
 import com.project.ecommerce.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;

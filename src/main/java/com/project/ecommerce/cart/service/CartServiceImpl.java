@@ -34,7 +34,6 @@ public class CartServiceImpl implements CartService {
 
         User user = getUser(userId);
         Product product = getProduct(productId);
-//        validateStock(product, quantity);
         Cart cart = getOrCreateCart(user);
 
         Optional<CartItem> existingItem = findCartItemByCartAndProduct(cart, productId);
@@ -56,29 +55,6 @@ public class CartServiceImpl implements CartService {
 
         cartItemRepository.save(cartItem);
         return cart;
-
-
-//        int existingQty = cartItemOpt.map(CartItem::getQuantity).orElse(0);
-//
-//        if(product.getStockQuantity() < existingQty + quantity){
-//            throw new RuntimeException("Not enough stock");
-//        }
-//
-//        if(cartItemOpt.isPresent()){
-//            CartItem existing = cartItemOpt.get();
-//            existing.setQuantity(existing.getQuantity() + quantity);
-//
-//            cartItemRepository.save(existing);
-//        }else {
-//            CartItem item = new CartItem();
-//            item.setCart(cart);
-//            item.setProduct(product);
-//            item.setQuantity(quantity);
-//
-//            cartItemRepository.save(item);
-//        }
-//
-//        return cartRepository.save(cart);
     }
 
     @Override
@@ -107,12 +83,6 @@ public class CartServiceImpl implements CartService {
         return productRepository.findById(productId)
                 .orElseThrow(()->new EntityNotFoundException("Product not found"));
     }
-
-//    private void validateStock(Product product, int quantity){
-//        if(product.getStockQuantity() < quantity){
-//            throw new EntityNotFoundException("Not enough stock");
-//        }
-//    }
 
     private Cart getOrCreateCart(User user){
         return cartRepository.findByUserId(user.getId()).

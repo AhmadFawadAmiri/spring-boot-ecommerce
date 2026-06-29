@@ -1,5 +1,5 @@
 package com.project.ecommerce.order;
 
 public enum PaymentStatus {
-    PENDING, COMPLETED, FAILED
+    CREATED, PENDING, PAID, CANCELLED, SHIPPED, COMPLETED, FAILED
 }

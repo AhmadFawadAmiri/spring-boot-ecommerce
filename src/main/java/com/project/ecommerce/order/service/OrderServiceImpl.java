@@ -27,7 +27,6 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
-   // private final UserRepository userRepository;
     private final OrderMapper orderMapper;
     private final CartItemRepository cartItemRepository;
 
@@ -35,7 +34,6 @@ public class OrderServiceImpl implements OrderService {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
-       // this.userRepository = userRepository;
         this.orderMapper = orderMapper;
         this.cartItemRepository = cartItemRepository;
     }
@@ -44,8 +42,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse checkout(Long userId) {
         //1. Get user and cart
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(()->new EntityNotFoundException("User not found"));
         Cart cart = getCart(userId);
         validateCart(cart);
         //2. Create order
@@ -60,28 +56,17 @@ public class OrderServiceImpl implements OrderService {
 
             // Stock validation
             validateStock(product, cartItem.getQuantity());
-//            if(product.getStockQuantity() < cartItem.getQuantity()){
-//                throw new RuntimeException("Not enough stock for product"+product.getName());
-//            }
+//
             // reduce stock
             reduceStock(product, cartItem.getQuantity());
             // create order item
             OrderItem orderItem =  createOrderItem( order, cartItem);
-//            product.setStockQuantity(product.getStockQuantity()-cartItem.getQuantity());
-//            productRepository.save(product);
-//            // Create order item
-//            OrderItem orderItem = new OrderItem();
-//            orderItem.setOrder(order);
-//            orderItem.setProduct(product);
-//            orderItem.setQuantity(cartItem.getQuantity());
-//            orderItem.setPriceAtPurchase(cartItem.getProduct().getPrice());
-
+//
             orderItems.add(orderItem);
 
             // Total calculation
             total = calculateTotal(total, product.getPrice(), cartItem.getQuantity());
-//                    total.add(product.getPrice()
-//                    .multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+//
         }
 
         //4. finalize order
@@ -92,7 +77,6 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         //6. clear cart
-        //cart.getCartItems().clear();
         cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.save(cart);
 
@@ -102,9 +86,7 @@ public class OrderServiceImpl implements OrderService {
     private Cart getCart(Long userId){
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(()->new EntityNotFoundException("Cart not found"));
-//        if(cart.getCartItems().isEmpty()){
-//            throw new RuntimeException("Car is empty");
-//        }
+
         return cart;
     }
 
