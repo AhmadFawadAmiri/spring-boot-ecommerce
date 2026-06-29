@@ -48,16 +48,6 @@ public class GlobalExceptionHandler {
                 request
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-
-//        ErrorResponse response = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.NOT_FOUND.value(),
-//                "RESOURCE_NOT_FOUND",
-//                ex.getMessage(),
-//                request.getRequestURI(),
-//                null
-//        );
-//        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -69,16 +59,6 @@ public class GlobalExceptionHandler {
                 request
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-
-//        ErrorResponse response = new ErrorResponse(
-//                LocalDateTime .now(),
-//                HttpStatus.BAD_REQUEST.value(),
-//                "BAD REQUEST",
-//                ex.getMessage(),
-//                request.getRequestURI(),
-//                null
-//        );
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(RuntimeException.class)
@@ -90,17 +70,9 @@ public class GlobalExceptionHandler {
                 request
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-//        ErrorResponse response = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.BAD_REQUEST.value(),
-//                "BAD_REQUEST",
-//                ex.getMessage(),
-//                request.getRequestURI(),
-//                null
-//        );
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    //@ExceptionHandler(Insuff)
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex, HttpServletRequest request){
@@ -114,15 +86,6 @@ public class GlobalExceptionHandler {
                 request
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-//        ErrorResponse response = new ErrorResponse(
-//                LocalDateTime.now(),
-//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                "INTERNAL_SERVER_ERROR",
-//                ex.getMessage(),
-//                request.getRequestURI(),
-//                null
-//        );
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     private ErrorResponse buildResponse(HttpStatus httpStatus, String error, String message, HttpServletRequest request){

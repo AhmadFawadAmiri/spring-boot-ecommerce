@@ -1,4 +1,4 @@
-package com.project.ecommerce.common;
+package com.project.ecommerce.payment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

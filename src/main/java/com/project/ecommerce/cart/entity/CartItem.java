@@ -1,6 +1,7 @@
 package com.project.ecommerce.cart.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.ecommerce.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class CartItem {
     @ManyToOne
     @JoinColumn(name = "cart_id")
     private Cart cart; //FK
+    //@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product; //FK

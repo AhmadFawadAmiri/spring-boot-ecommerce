@@ -1,5 +1,9 @@
 package com.project.ecommerce.cart.service;
 
+import com.project.ecommerce.cart.dto.request.CartItemRequest;
+import com.project.ecommerce.cart.dto.response.CartItemResponse;
+import com.project.ecommerce.cart.dto.response.CartResponse;
+import com.project.ecommerce.cart.mapper.CartMapper;
 import com.project.ecommerce.product.entity.Product;
 import com.project.ecommerce.product.repository.ProductRepository;
 import com.project.ecommerce.cart.entity.Cart;
@@ -20,18 +24,23 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final CartItemRepository cartItemRepository;
+    private final CartMapper cartMapper;
 
-    public CartServiceImpl(CartRepository cartRepository, UserRepository userRepository, ProductRepository productRepository, CartItemRepository cartItemRepository) {
+    public CartServiceImpl(CartRepository cartRepository, UserRepository userRepository, ProductRepository productRepository, CartItemRepository cartItemRepository, CartMapper cartMapper) {
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.cartItemRepository = cartItemRepository;
+        this.cartMapper = cartMapper;
     }
 
     @Override
     @Transactional
-    public Cart addToCart(Long userId, Long productId, int quantity) {
+    public CartResponse addToCart(Long userId, Long productId, int quantity) {
 
+        if(quantity <= 0){
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
         User user = getUser(userId);
         Product product = getProduct(productId);
         Cart cart = getOrCreateCart(user);
@@ -41,7 +50,7 @@ public class CartServiceImpl implements CartService {
         int totalQuantity = existingItem.map(item->item.getQuantity()+quantity)
                 .orElse(quantity);
         if (product.getStockQuantity()<totalQuantity){
-            throw new EntityNotFoundException("Not enough stock");
+            throw new IllegalArgumentException("Not enough stock");
         }
 
         CartItem cartItem;
@@ -54,22 +63,43 @@ public class CartServiceImpl implements CartService {
         }
 
         cartItemRepository.save(cartItem);
-        return cart;
+        return cartMapper.toResponse(cart);
     }
 
     @Override
-    public Cart getCartByUser(Long userId) {
-        return cartRepository.findByUserId(userId)
+    public CartResponse getCartByUser(Long userId) {
+        Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(()-> new EntityNotFoundException("Cart not found"));
+        return cartMapper.toResponse(cart);
     }
 
     @Override
     @Transactional
-    public void removeItem(Long cartItemId) {
-        if(!cartItemRepository.existsById(cartItemId)){
-            throw new EntityNotFoundException("Cart item not found");
+    public void removeItem(Long userId, Long cartItemId) {
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(()-> new EntityNotFoundException("Cart item not found"));
+        if(!item.getCart().getUser().getId().equals(userId)) {
+            throw new EntityNotFoundException("Not allowed");
         }
         cartItemRepository.deleteById(cartItemId);
+    }
+
+    @Transactional
+    @Override
+    public CartItemResponse updateItem(Long id, CartItemRequest item) {
+        Product product = productRepository.findById(item.getProductId())
+                .orElseThrow(()-> new EntityNotFoundException("Item not found"));
+        if(product.getStockQuantity() < item.getQuantity()){
+            throw new IllegalArgumentException("Not enough stock");
+        }
+        CartItem cartItem = cartItemRepository.findById(id)
+                .orElseThrow(()-> new EntityNotFoundException("Item not found"));
+        Cart cart = cartRepository.findById(cartItem.getCart().getId())
+                .orElseThrow(()->new EntityNotFoundException("Cart not found"));
+        cartMapper.updateCartItem(cartItem, item, cart);
+        cartItem.setProduct(getProduct(item.getProductId()));
+        cartItemRepository.save(cartItem);
+        return cartMapper.toCartItemResponse(cartItem);
     }
 
     // -------------------------

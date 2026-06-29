@@ -1,4 +1,4 @@
-package com.project.ecommerce.common;
+package com.project.ecommerce.payment;
 
 import com.project.ecommerce.order.PaymentMethod;
 import com.project.ecommerce.order.PaymentStatus;

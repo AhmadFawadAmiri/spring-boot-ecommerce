@@ -1,10 +1,13 @@
 package com.project.ecommerce.cart.service;
 
-import com.project.ecommerce.cart.entity.Cart;
+import com.project.ecommerce.cart.dto.request.CartItemRequest;
+import com.project.ecommerce.cart.dto.response.CartItemResponse;
+import com.project.ecommerce.cart.dto.response.CartResponse;
 
 
 public interface CartService {
-    Cart addToCart(Long userId, Long productId, int quantity);
-    Cart getCartByUser(Long userId);
-    void removeItem(Long cartItemId);
+    CartResponse addToCart(Long userId, Long productId, int quantity);
+    CartResponse getCartByUser(Long userId);
+    void removeItem(Long userId, Long cartItemId);
+    CartItemResponse updateItem(Long id, CartItemRequest item);
 }

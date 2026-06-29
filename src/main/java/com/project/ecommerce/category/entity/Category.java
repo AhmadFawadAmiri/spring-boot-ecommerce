@@ -1,5 +1,6 @@
 package com.project.ecommerce.category.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.ecommerce.product.entity.Product;
 import jakarta.persistence.*;

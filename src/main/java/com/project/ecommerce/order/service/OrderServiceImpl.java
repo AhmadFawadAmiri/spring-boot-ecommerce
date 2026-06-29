@@ -83,6 +83,20 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(savedOrder);
     }
 
+    @Override
+    @Transactional
+    public OrderResponse updateStatus(Long orderId, OrderStatus newStatus){
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()-> new EntityNotFoundException("Order not found"));
+        validateStatusTransition(order.getStatus(), newStatus);
+        order.setStatus(newStatus);
+        Order saved = orderRepository.save(order);
+        return orderMapper.toResponse(saved);
+    }
+
+
+    //-------------Private methods
+
     private Cart getCart(Long userId){
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(()->new EntityNotFoundException("Cart not found"));
@@ -126,7 +140,33 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateCart(Cart cart){
         if(cart.getCartItems().isEmpty()){
-            throw new RuntimeException("Car is empty");
+            throw new RuntimeException("Cart is empty");
+        }
+    }
+
+    private void validateStatusTransition(OrderStatus current, OrderStatus next){
+        switch (current){
+            case CREATED -> {
+                if(!(next == OrderStatus.PAID || next == OrderStatus.CANCELLED)){
+                    throw new IllegalArgumentException("Invalid transition from CREATED");
+                }
+            }
+            case PAID -> {
+                if(!(next == OrderStatus.SHIPPED || next == OrderStatus.CANCELLED)){
+                    throw new IllegalArgumentException("Invalid transition from PAID");
+                }
+            }
+            case SHIPPED -> {
+                if(!(next == OrderStatus.DELIVERED || next == OrderStatus.CANCELLED)){
+                    throw new IllegalArgumentException("Invalid transition from SHIPPED");
+                }
+            }
+            case DELIVERED -> {
+                throw new IllegalArgumentException("Order already completed");
+            }
+            case CANCELLED -> {
+                throw new IllegalArgumentException("Order already cancelled");
+            }
         }
     }
 }
