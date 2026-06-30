@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.channels.IllegalChannelGroupException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +95,31 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toResponse(saved);
     }
 
+    @Override
+    public OrderResponse getById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(()->new EntityNotFoundException("Order not found"));
+        return orderMapper.toResponse(order);
+    }
+
+    @Override
+    public List<OrderResponse> getUserOrders(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orders.stream().map(orderMapper::toResponse).toList();
+    }
+
+    @Transactional
+    @Override
+    public OrderResponse cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                        .orElseThrow(()->new EntityNotFoundException("Order not found"));
+        if(order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED){
+            throw new IllegalArgumentException("Cannot cancel shipped or delivered order");
+        }
+        order.setStatus(OrderStatus.CANCELLED);
+        return orderMapper.toResponse(orderRepository.save(order));
+    }
+
 
     //-------------Private methods
 
@@ -113,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateStock(Product product, int quantity){
         if(product.getStockQuantity() < quantity){
-            throw new RuntimeException("Not enough stock for product"+product.getName());
+            throw new IllegalArgumentException("Not enough stock for product"+product.getName());
         }
     }
 
@@ -140,7 +166,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateCart(Cart cart){
         if(cart.getCartItems().isEmpty()){
-            throw new RuntimeException("Cart is empty");
+            throw new IllegalArgumentException("Cart is empty");
         }
     }
 
