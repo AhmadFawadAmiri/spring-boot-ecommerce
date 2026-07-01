@@ -15,7 +15,7 @@ public class OrderMapper {
         response.setOrderId(order.getId());
         response.setUserId(order.getUser().getId());
         response.setTotalPrice(order.getTotalPrice());
-        response.setStatus(order.getStatus().name());
+        response.setStatus(order.getStatus());
         response.setCreateAt(order.getCreatedAt());
         List<OrderItemResponse> items = order.getOrderItems()
                         .stream()
@@ -30,7 +30,7 @@ public class OrderMapper {
         orderItem.setProductId(item.getProduct().getId());
         orderItem.setProductName(item.getProduct().getName());
         orderItem.setQuantity(item.getQuantity());
-        orderItem.setPrice(item.getPriceAtPurchase());
+        orderItem.setPriceAtPurchase(item.getPriceAtPurchase());
         return orderItem;
     }
 }

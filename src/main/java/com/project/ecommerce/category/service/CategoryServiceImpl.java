@@ -5,6 +5,7 @@ import com.project.ecommerce.category.dto.response.CategoryResponse;
 import com.project.ecommerce.category.entity.Category;
 import com.project.ecommerce.category.mapper.CategoryMapper;
 import com.project.ecommerce.category.repository.CategoryRepository;
+import com.project.ecommerce.global.exception.DuplicateResourceException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     public List<CategoryResponse> getAll() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findByActiveTrue().stream()
                 .map(categoryMapper::toResponse).toList();
     }
 
@@ -48,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService{
         String name = request.getName().trim();
         if(!category.getName().equals(request.getName())
                 && categoryRepository.existsByName(name)) {
-            throw new RuntimeException("Category already exists");
+            throw new DuplicateResourceException("Category already exists");
         }
         category.setName(name);
         category.setDescription(request.getDescription());
@@ -62,7 +63,8 @@ public class CategoryServiceImpl implements CategoryService{
         if(!category.getProducts().isEmpty()){
             throw new RuntimeException("Cannot delete category with products");
         }
-        categoryRepository.delete(category);
+        category.setActive(false);
+        categoryRepository.save(category);
     }
 
     private Category getCategoryById(Long id){

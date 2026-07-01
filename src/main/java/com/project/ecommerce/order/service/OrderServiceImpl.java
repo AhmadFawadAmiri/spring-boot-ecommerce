@@ -115,6 +115,14 @@ public class OrderServiceImpl implements OrderService {
         if(order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED){
             throw new IllegalArgumentException("Cannot cancel shipped or delivered order");
         }
+        if(order.getStatus() == OrderStatus.CANCELLED){
+            return orderMapper.toResponse(order);
+        }
+        for(OrderItem item : order.getOrderItems()){
+            Product product = item.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
         order.setStatus(OrderStatus.CANCELLED);
         return orderMapper.toResponse(orderRepository.save(order));
     }
@@ -123,10 +131,8 @@ public class OrderServiceImpl implements OrderService {
     //-------------Private methods
 
     private Cart getCart(Long userId){
-        Cart cart = cartRepository.findByUserId(userId)
+        return cartRepository.findByUserId(userId)
                 .orElseThrow(()->new EntityNotFoundException("Cart not found"));
-
-        return cart;
     }
 
     private Order createOrder(User user){
@@ -138,7 +144,7 @@ public class OrderServiceImpl implements OrderService {
 
     private void validateStock(Product product, int quantity){
         if(product.getStockQuantity() < quantity){
-            throw new IllegalArgumentException("Not enough stock for product"+product.getName());
+            throw new IllegalArgumentException("Not enough stock for product " + product.getName());
         }
     }
 

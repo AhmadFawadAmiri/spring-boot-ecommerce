@@ -8,6 +8,8 @@ import com.project.ecommerce.cart.entity.CartItem;
 import com.project.ecommerce.product.mapper.ProductMapper;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class CartMapper {
     private final ProductMapper productMapper;
@@ -23,6 +25,12 @@ public class CartMapper {
         response.setName(cart.getUser().getUsername());
         response.setCartItems(cart.getCartItems()
                 .stream().map(this::toCartItemResponse).toList());
+        response.setTotalItems(cart.getCartItems()
+                .stream().mapToInt(item->item.getQuantity()).sum());
+        response.setTotalPrice(cart.getCartItems()
+                .stream().map(item -> item.getProduct().getPrice().multiply(
+                                BigDecimal.valueOf(item.getQuantity())))
+                        .reduce(BigDecimal.ZERO, BigDecimal::add));
         return response;
     }
 
@@ -31,6 +39,7 @@ public class CartMapper {
         response.setId(item.getId());
         response.setQuantity(item.getQuantity());
         response.setProduct(productMapper.toResponse(item.getProduct()));
+        response.setPrice(item.getProduct().getPrice());
         return response;
     }
 

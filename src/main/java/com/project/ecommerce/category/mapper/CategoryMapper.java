@@ -12,6 +12,7 @@ public class CategoryMapper {
         Category category = new Category();
         category.setName(request.getName());
         category.setDescription(request.getDescription());
+        category.setActive(true);
         return category;
     }
 
@@ -20,6 +21,7 @@ public class CategoryMapper {
         response.setId(category.getId());
         response.setName(category.getName());
         response.setDescription(category.getDescription());
+        response.setCreatedAt(category.getCreatedAt());
         return response;
     }
 

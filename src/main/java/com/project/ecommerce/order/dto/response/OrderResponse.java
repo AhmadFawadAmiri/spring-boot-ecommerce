@@ -1,5 +1,6 @@
 package com.project.ecommerce.order.dto.response;
 
+import com.project.ecommerce.order.entity.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,6 @@ public class OrderResponse {
     private Long userId;
     private List<OrderItemResponse> items;
     private BigDecimal totalPrice;
-    private String status;
+    private OrderStatus status;
     private LocalDateTime createAt;
 }

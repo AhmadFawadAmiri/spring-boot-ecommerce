@@ -21,25 +21,25 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @ResponseStatus(HttpStatus.CREATED)
+    //@ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public CategoryResponse create(@Valid @RequestBody CategoryRequest request){
-        return categoryService.create(request);
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest request){
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(request));
     }
 
     @GetMapping
-    public List<CategoryResponse> getAll(){
-        return categoryService.getAll();
+    public ResponseEntity<List<CategoryResponse>> getAll(){
+        return ResponseEntity.ok(categoryService.getAll());
     }
 
     @GetMapping("/{id}")
-    public CategoryResponse getById(@PathVariable Long id){
-        return categoryService.getById(id);
+    public ResponseEntity<CategoryResponse> getById(@PathVariable Long id){
+        return ResponseEntity.ok(categoryService.getById(id));
     }
 
     @PutMapping("/{id}")
-    public CategoryResponse update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request){
-        return categoryService.update(id, request);
+    public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request){
+        return ResponseEntity.ok(categoryService.update(id, request));
     }
 
     @DeleteMapping("/{id}")

@@ -16,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 
 @Service
@@ -75,11 +76,11 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public void removeItem(Long userId, Long cartItemId) {
+    public void removeItem(Long userId, Long cartItemId) throws AccessDeniedException {
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(()-> new EntityNotFoundException("Cart item not found"));
         if(!item.getCart().getUser().getId().equals(userId)) {
-            throw new EntityNotFoundException("Not allowed");
+            throw new AccessDeniedException("Not allowed");
         }
         cartItemRepository.deleteById(cartItemId);
     }

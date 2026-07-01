@@ -5,6 +5,8 @@ import com.project.ecommerce.product.dto.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+
 public interface ProductService {
 
     ProductResponse createProduct(ProductRequest Request);
@@ -19,6 +21,8 @@ public interface ProductService {
 
     Page<ProductResponse> search(String name, Pageable pageable);
 
-    Page<ProductResponse> filter(String type, String value, Pageable pageable);
+    //Page<ProductResponse> filter(String type, String value, Pageable pageable);
+
+    Page<ProductResponse> filter(String name, Long categoryId, BigDecimal minPrice, Pageable pageable);
 
 }

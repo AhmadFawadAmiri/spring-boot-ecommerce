@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
+
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -28,9 +30,9 @@ public class CartController {
     }
 
     @DeleteMapping("/item/{userId}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long userId, @RequestParam() Long itemId){
+    public ResponseEntity<Void> deleteItem(@PathVariable Long userId, @RequestParam() Long cartItemId) throws AccessDeniedException {
 
-        cartService.removeItem(userId, itemId);
+        cartService.removeItem(userId, cartItemId);
         return ResponseEntity.noContent().build();
     }
 

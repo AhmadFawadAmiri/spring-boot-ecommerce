@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -59,9 +60,10 @@ public class ProductController {
     }
     @GetMapping("/filter")
     public ResponseEntity<Page<ProductResponse>> filter(
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) String value,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
             Pageable pageable){
-        return ResponseEntity.ok(productService.filter(type, value, pageable));
+        return ResponseEntity.ok(productService.filter(name, categoryId, minPrice, pageable));
     }
 }
