@@ -8,10 +8,11 @@ import com.project.ecommerce.product.mapper.ProductMapper;
 import com.project.ecommerce.category.repository.CategoryRepository;
 import com.project.ecommerce.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.springframework.util.StringUtils;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -35,9 +36,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(productMapper::toResponse).toList();
+    public Page<ProductResponse> getAllActiveProducts(Pageable pageable) {
+        Page<Product> products = productRepository.findByActiveTrue(pageable);
+        return products.map(productMapper::toResponse);
     }
 
     @Override
@@ -65,6 +66,34 @@ public class ProductServiceImpl implements ProductService {
     public void deleteProduct(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(()->new EntityNotFoundException(("Product not found")));
-        productRepository.delete(product);
+        product.setActive(false);
+        productRepository.save(product);
+    }
+
+    @Override
+    public Page<ProductResponse> search(String name, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCase(name, pageable)
+                .map(productMapper::toResponse);
+    }
+
+    @Override
+    public Page<ProductResponse> filter(String type, String value, Pageable pageable) {
+        if(type == null || !StringUtils.hasText(value)){
+            return getAllActiveProducts(pageable);
+        }
+        return switch (type){
+            case "category" -> {
+                Long categoryId;
+                try{
+                    categoryId = Long.parseLong(value);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Invalid category id");
+                }
+                yield productRepository.findByCategory_Id(categoryId, pageable)
+                        .map(productMapper::toResponse);
+            }
+            case "name" -> search(value, pageable);
+            default -> getAllActiveProducts(pageable);
+        };
     }
 }

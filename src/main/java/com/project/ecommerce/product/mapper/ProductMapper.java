@@ -15,6 +15,7 @@ public class ProductMapper {
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
         product.setCategory(category);
+        product.setActive(true);
         return product;
     }
 
@@ -25,8 +26,10 @@ public class ProductMapper {
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
         response.setStockQuantity(product.getStockQuantity());
-        response.setCategoryId(product.getCategory().getId());
-        response.setCategoryName(product.getCategory().getName());
+        if(product.getCategory() != null){
+            response.setCategoryId(product.getCategory().getId());
+            response.setCategoryName(product.getCategory().getName());
+        }
         response.setCreatedAt(product.getCreatedAt());
         return response;
     }

@@ -40,5 +40,9 @@ public class Product {
     public void prePersist(){
         createdAt = LocalDateTime.now();
     }
+    @Column(name = "imageUrl")
+    public String imageUrl;
+    @Column(name = "active")
+    private boolean active;
 }
 
