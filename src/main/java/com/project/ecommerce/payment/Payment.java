@@ -1,7 +1,5 @@
 package com.project.ecommerce.payment;
 
-import com.project.ecommerce.order.PaymentMethod;
-import com.project.ecommerce.order.PaymentStatus;
 import com.project.ecommerce.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
