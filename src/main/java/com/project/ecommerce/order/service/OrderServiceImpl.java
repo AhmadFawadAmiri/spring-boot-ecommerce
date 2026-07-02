@@ -14,11 +14,13 @@ import com.project.ecommerce.cart.entity.CartItem;
 import com.project.ecommerce.cart.repository.CartRepository;
 import com.project.ecommerce.user.entity.User;
 import com.project.ecommerce.user.repository.UserRepository;
+import com.project.ecommerce.user.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
     private final CartItemRepository cartItemRepository;
 
@@ -34,18 +37,23 @@ public class OrderServiceImpl implements OrderService {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
         this.orderMapper = orderMapper;
         this.cartItemRepository = cartItemRepository;
     }
 
     @Transactional
     @Override
-    public OrderResponse checkout(Long userId) {
+    public OrderResponse checkout() {
+        //0. get logged-in user from JWT
+        String email = SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()->new EntityNotFoundException("User not found"));
         //1. Get user and cart
-        Cart cart = getCart(userId);
+        Cart cart = getCart(user.getId());
         validateCart(cart);
         //2. Create order
-        Order order = createOrder(cart.getUser());
+        Order order = createOrder(user);
 
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal total = BigDecimal.ZERO;
@@ -78,8 +86,6 @@ public class OrderServiceImpl implements OrderService {
 
         //6. clear cart
         cartItemRepository.deleteAll(cart.getCartItems());
-        cartRepository.save(cart);
-
         return orderMapper.toResponse(savedOrder);
     }
 
@@ -98,12 +104,16 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(()->new EntityNotFoundException("Order not found"));
+//        validateOwnership(order);
         return orderMapper.toResponse(order);
     }
 
     @Override
-    public List<OrderResponse> getUserOrders(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
+    public List<OrderResponse> getUserOrders() {
+        String email = SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()->new EntityNotFoundException("User not found"));
+        List<Order> orders = orderRepository.findByUserId(user.getId());
         return orders.stream().map(orderMapper::toResponse).toList();
     }
 
@@ -112,6 +122,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                         .orElseThrow(()->new EntityNotFoundException("Order not found"));
+//        validateOwnership(order);
         if(order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED){
             throw new IllegalArgumentException("Cannot cancel shipped or delivered order");
         }
@@ -200,4 +211,11 @@ public class OrderServiceImpl implements OrderService {
             }
         }
     }
+
+//    private void validateOwnership(Order order){
+//        String email = SecurityUtils.getCurrentUserEmail();
+//        if(!order.getUser().getEmail().equals(email)){
+//            throw new SecurityException("Access denied");
+//        }
+//    }
 }

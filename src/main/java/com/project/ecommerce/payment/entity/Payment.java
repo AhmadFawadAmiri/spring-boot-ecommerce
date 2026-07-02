@@ -1,4 +1,4 @@
-package com.project.ecommerce.payment;
+package com.project.ecommerce.payment.entity;
 
 import com.project.ecommerce.order.entity.Order;
 import jakarta.persistence.*;
@@ -20,7 +20,7 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "order_id")
     private Order order;
     private BigDecimal amount;
@@ -29,6 +29,7 @@ public class Payment {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @PrePersist
     public void prePersist(){
