@@ -1,5 +1,5 @@
 package com.project.ecommerce.payment;
 
 public enum PaymentMethod {
-    CARD, PAYPAL, BANK_TRANSFER, CASH
+    CARD, MOCK, PAYPAL, BANK_TRANSFER, CASH
 }

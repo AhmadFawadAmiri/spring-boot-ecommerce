@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,10 +23,17 @@ public class Payment {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+    private BigDecimal amount;
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
+    private LocalDateTime createdAt;
+    @PrePersist
+    public void prePersist(){
+        createdAt = LocalDateTime.now();
+        status = PaymentStatus.PENDING;
+    }
 
 }
