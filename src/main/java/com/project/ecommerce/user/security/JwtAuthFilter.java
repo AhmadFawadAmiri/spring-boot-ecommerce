@@ -38,6 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 email = claims.getSubject();
             } catch (Exception ex) {
                 filterChain.doFilter(request, response);
+                filterChain.doFilter(request, response);
                 return;
             }
         }

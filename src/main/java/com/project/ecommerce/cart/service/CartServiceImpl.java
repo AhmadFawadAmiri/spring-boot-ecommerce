@@ -12,11 +12,12 @@ import com.project.ecommerce.user.entity.User;
 import com.project.ecommerce.cart.repository.CartItemRepository;
 import com.project.ecommerce.cart.repository.CartRepository;
 import com.project.ecommerce.user.repository.UserRepository;
+import com.project.ecommerce.user.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.Optional;
 
 @Service
@@ -37,12 +38,13 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public CartResponse addToCart(Long userId, Long productId, int quantity) {
+    public CartResponse addToCart(Long productId, int quantity) {
 
         if(quantity <= 0){
             throw new IllegalArgumentException("Quantity must be greater than zero");
         }
-        User user = getUser(userId);
+        User user = getCurrentUser();
+//        User user = getUser(userId);
         Product product = getProduct(productId);
         Cart cart = getOrCreateCart(user);
 
@@ -68,18 +70,19 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse getCartByUser(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
+    public CartResponse getCart() {
+        Cart cart = cartRepository.findByUserId(getCurrentUser().getId())
                 .orElseThrow(()-> new EntityNotFoundException("Cart not found"));
         return cartMapper.toResponse(cart);
     }
 
     @Override
     @Transactional
-    public void removeItem(Long userId, Long cartItemId) throws AccessDeniedException {
+    public void removeItem(Long cartItemId){
+        User user = getCurrentUser();
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(()-> new EntityNotFoundException("Cart item not found"));
-        if(!item.getCart().getUser().getId().equals(userId)) {
+        if(!item.getCart().getUser().getId().equals(user.getId())) {
             throw new AccessDeniedException("Not allowed");
         }
         cartItemRepository.deleteById(cartItemId);
@@ -87,18 +90,21 @@ public class CartServiceImpl implements CartService {
 
     @Transactional
     @Override
-    public CartItemResponse updateItem(Long id, CartItemRequest item) {
-        Product product = productRepository.findById(item.getProductId())
+    public CartItemResponse updateItem(Long cartItemId, CartItemRequest request) {
+        Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(()-> new EntityNotFoundException("Item not found"));
-        if(product.getStockQuantity() < item.getQuantity()){
+        if(product.getStockQuantity() < request.getQuantity()){
             throw new IllegalArgumentException("Not enough stock");
         }
-        CartItem cartItem = cartItemRepository.findById(id)
+        CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(()-> new EntityNotFoundException("Item not found"));
+        if(!cartItem.getCart().getUser().getId().equals(getCurrentUser().getId())) {
+            throw new AccessDeniedException("Not allowed");
+        }
         Cart cart = cartRepository.findById(cartItem.getCart().getId())
                 .orElseThrow(()->new EntityNotFoundException("Cart not found"));
-        cartMapper.updateCartItem(cartItem, item, cart);
-        cartItem.setProduct(getProduct(item.getProductId()));
+        cartMapper.updateCartItem(cartItem, request, cart);
+        cartItem.setProduct(getProduct(request.getProductId()));
         cartItemRepository.save(cartItem);
         return cartMapper.toCartItemResponse(cartItem);
     }
@@ -139,5 +145,10 @@ public class CartServiceImpl implements CartService {
 
     private void updateQuantity(CartItem item, int quantity){
         item.setQuantity(item.getQuantity() + quantity);
+    }
+
+    private User getCurrentUser(){
+        return userRepository.findByEmail(SecurityUtils.getCurrentUserEmail())
+                .orElseThrow(()-> new EntityNotFoundException("User not found") );
     }
 }

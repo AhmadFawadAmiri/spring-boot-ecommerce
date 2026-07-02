@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -19,26 +18,26 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping("/{userId}/items")
-    public ResponseEntity<CartResponse> addToCart(@PathVariable Long userId, @RequestParam Long productId, @RequestParam int quantity){
-        return ResponseEntity.ok(cartService.addToCart(userId, productId, quantity));
+    @PostMapping("/items")
+    public ResponseEntity<CartResponse> addToCart(@RequestParam Long productId, @RequestParam int quantity){
+        return ResponseEntity.ok(cartService.addToCart(productId, quantity));
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<CartResponse> getCart(@PathVariable Long userId){
-        return ResponseEntity.ok(cartService.getCartByUser(userId));
+    @GetMapping
+    public ResponseEntity<CartResponse> getCart(){
+        return ResponseEntity.ok(cartService.getCart());
     }
 
-    @DeleteMapping("/item/{userId}")
-    public ResponseEntity<Void> deleteItem(@PathVariable Long userId, @RequestParam() Long cartItemId) throws AccessDeniedException {
+    @DeleteMapping("/item/{cartItemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable Long cartItemId){
 
-        cartService.removeItem(userId, cartItemId);
+        cartService.removeItem(cartItemId);
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/items/{id}")
-    public ResponseEntity<CartItemResponse> update(@PathVariable Long id,
+    @PatchMapping("/items/{cartItemId}")
+    public ResponseEntity<CartItemResponse> update(@PathVariable Long cartItemId,
                                                    @Valid @RequestBody CartItemRequest request){
-        return ResponseEntity.ok(cartService.updateItem(id, request));
+        return ResponseEntity.ok(cartService.updateItem(cartItemId, request));
     }
 }

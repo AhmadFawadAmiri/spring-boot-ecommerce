@@ -4,8 +4,10 @@ import com.project.ecommerce.product.dto.request.ProductRequest;
 import com.project.ecommerce.product.dto.response.ProductResponse;
 import com.project.ecommerce.product.service.ProductService;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +34,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductResponse>> getAll(@PageableDefault(size = 5, sort = "id") Pageable pageable){
+    public ResponseEntity<Page<ProductResponse>> getAll(@PageableDefault(size = 5, sort = "name", direction = Sort.Direction.ASC) @ParameterObject Pageable pageable){
         return ResponseEntity.ok(productService.getAllActiveProducts(pageable));
     }
 

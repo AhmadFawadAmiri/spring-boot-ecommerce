@@ -36,10 +36,18 @@ public class PaymentServiceImpl implements PaymentService{
         Payment payment = createPayment(order, method);
 
         //-----MOCK payment gateway (simulate success)
+        boolean success = true; //gateway.pay();
+        if(success){
+            payment.setStatus(PaymentStatus.SUCCESS);
+            markOrderPaid(order);
+        }else {
+            payment.setStatus(PaymentStatus.FAILED);
+        }
+//        payment.setStatus(PaymentStatus.SUCCESS);
         Payment savedPayment = paymentRepository.save(payment);
-
-        //----update order
-        markOrderPaid(order);
+//
+//        //----update order
+//        markOrderPaid(order);
         return paymentMapper.toResponse(savedPayment);
     }
 
@@ -62,7 +70,7 @@ public class PaymentServiceImpl implements PaymentService{
         payment.setOrder(order);
         payment.setAmount(order.getTotalPrice());
         payment.setPaymentMethod(method);
-        payment.setStatus(PaymentStatus.SUCCESS);
+        payment.setStatus(PaymentStatus.PENDING);
         return payment;
     }
 
