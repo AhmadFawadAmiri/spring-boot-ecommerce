@@ -19,8 +19,6 @@ public class OrderSecurity {
 
     public boolean isOwner(Long orderId){
         String email = SecurityUtils.getCurrentUserEmail();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(()-> new EntityNotFoundException("User not found"));
-        return orderRepository.existsByIdAndUserId(orderId, user.getId());
+        return orderRepository.existsByIdAndUser_Email(orderId, email);
     }
 }

@@ -15,9 +15,9 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI(){
         return new OpenAPI()
                 .info(new Info()
-                        .title("API Documents")
-                        .version("1.0")
-                        .description("Independence documentations"))
+                        .title("E-Commerce REST API")
+                        .version("1.0.0")
+                        .description("Backend RES API build with Spring Boot"))
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("BearerAuth",

@@ -85,6 +85,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         //6. clear cart
+        cart.getCartItems().clear();
         cartItemRepository.deleteAll(cart.getCartItems());
         return orderMapper.toResponse(savedOrder);
     }
@@ -104,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse getById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(()->new EntityNotFoundException("Order not found"));
-//        validateOwnership(order);
+        validateOwnership(order);
         return orderMapper.toResponse(order);
     }
 
@@ -122,7 +123,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                         .orElseThrow(()->new EntityNotFoundException("Order not found"));
-//        validateOwnership(order);
+        validateOwnership(order);
         if(order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.DELIVERED){
             throw new IllegalArgumentException("Cannot cancel shipped or delivered order");
         }
@@ -212,10 +213,10 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-//    private void validateOwnership(Order order){
-//        String email = SecurityUtils.getCurrentUserEmail();
-//        if(!order.getUser().getEmail().equals(email)){
-//            throw new SecurityException("Access denied");
-//        }
-//    }
+    private void validateOwnership(Order order){
+        String email = SecurityUtils.getCurrentUserEmail();
+        if(!order.getUser().getEmail().equals(email)){
+            throw new SecurityException("Access denied");
+        }
+    }
 }

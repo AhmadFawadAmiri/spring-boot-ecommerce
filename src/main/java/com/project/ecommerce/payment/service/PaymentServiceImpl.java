@@ -11,6 +11,7 @@ import com.project.ecommerce.payment.entity.PaymentStatus;
 import com.project.ecommerce.payment.mapper.PaymentMapper;
 import com.project.ecommerce.payment.repository.PaymentRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,22 +34,34 @@ public class PaymentServiceImpl implements PaymentService{
         validateDuplicate(orderId);
         Order order = getOrder(orderId);
         validateOrderForPayment(order);
-        Payment payment = createPayment(order, method);
 
-        //-----MOCK payment gateway (simulate success)
-        boolean success = true; //gateway.pay();
-        if(success){
-            payment.setStatus(PaymentStatus.SUCCESS);
-            markOrderPaid(order);
-        }else {
-            payment.setStatus(PaymentStatus.FAILED);
-        }
-//        payment.setStatus(PaymentStatus.SUCCESS);
+        // 1. create payment (PENDING only)
+        Payment payment = createPayment(order, method);
         Payment savedPayment = paymentRepository.save(payment);
-//
-//        //----update order
-//        markOrderPaid(order);
+
+        // 2. process payment (simulation layer)
+        processPaymentAsync(savedPayment.getId());
         return paymentMapper.toResponse(savedPayment);
+    }
+    @Async
+    public void processPaymentAsync(Long paymentId){
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(()->new EntityNotFoundException("Payment not found"));
+        //-----MOCK payment gateway (simulate external gateway)
+        try{
+            Thread.sleep(2000); // simulate bank delay
+            boolean success = processFakeGateway();
+            if(success){
+                payment.setStatus(PaymentStatus.SUCCESS);
+                markOrderPaid(payment.getOrder());
+            }else {
+                payment.setStatus(PaymentStatus.FAILED);
+            }
+            paymentRepository.save(payment);
+        } catch (InterruptedException e) {
+            payment.setStatus(PaymentStatus.FAILED);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -89,6 +102,10 @@ public class PaymentServiceImpl implements PaymentService{
     private void markOrderPaid(Order order){
         order.setStatus(OrderStatus.PAID);
         orderRepository.save(order);
+    }
+
+    private boolean processFakeGateway(){
+        return Math.random() > 0.2; // 80% success
     }
 }
 

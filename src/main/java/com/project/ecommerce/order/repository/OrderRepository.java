@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserId(Long userId);
-    boolean existsByIdAndUserId(Long orderId, Long userId);
+    boolean existsByIdAndUser_Email(Long orderId, String email);
 }
