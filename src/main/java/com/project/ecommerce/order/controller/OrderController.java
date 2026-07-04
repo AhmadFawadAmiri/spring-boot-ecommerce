@@ -27,6 +27,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.checkout());
     }
 
+    @Operation(summary = "Get order by ID")
     @PreAuthorize("hasRole('ADMIN') or @orderSecurity.isOwner(#orderId)")
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getById(@PathVariable Long orderId){

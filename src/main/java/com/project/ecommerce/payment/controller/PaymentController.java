@@ -6,7 +6,10 @@ import com.project.ecommerce.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Payment", description = "Payment management endpoints")
 @RestController
@@ -29,5 +32,12 @@ public class PaymentController {
     @GetMapping("/{orderId}")
     public ResponseEntity<PaymentResponse> getByOrder(@PathVariable Long orderId){
         return ResponseEntity.ok(paymentService.getByOrderId(orderId));
+    }
+
+    @Operation(summary = "History of payments")
+    @PreAuthorize("isAuthenticated")
+    @GetMapping("/my-payments")
+    public ResponseEntity<List<PaymentResponse>> getMyPayments(){
+        return ResponseEntity.ok(paymentService.getMyPayments());
     }
 }

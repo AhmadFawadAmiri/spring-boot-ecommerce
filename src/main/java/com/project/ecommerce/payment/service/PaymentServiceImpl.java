@@ -10,11 +10,15 @@ import com.project.ecommerce.payment.entity.PaymentMethod;
 import com.project.ecommerce.payment.entity.PaymentStatus;
 import com.project.ecommerce.payment.mapper.PaymentMapper;
 import com.project.ecommerce.payment.repository.PaymentRepository;
+import com.project.ecommerce.user.entity.User;
+import com.project.ecommerce.user.repository.UserRepository;
+import com.project.ecommerce.user.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -23,11 +27,13 @@ public class PaymentServiceImpl implements PaymentService{
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final PaymentMapper paymentMapper;
+    private final UserRepository userRepository;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, PaymentMapper paymentMapper) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, PaymentMapper paymentMapper, UserRepository userRepository) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.paymentMapper = paymentMapper;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -81,6 +87,15 @@ public class PaymentServiceImpl implements PaymentService{
         paymentRepository.save(payment);
     }
 
+    @Override
+    public List<PaymentResponse> getMyPayments() {
+        String email = SecurityUtils.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(()-> new EntityNotFoundException("User not found"));
+        List<Payment> payments = paymentRepository.findByOrderUserId(user.getId());
+        return payments.stream().map(paymentMapper::toResponse).toList();
+    }
+
     //-------------Private methods
 
     private void validateDuplicate(Long orderId){
@@ -115,7 +130,7 @@ public class PaymentServiceImpl implements PaymentService{
     }
 
     private boolean processFakeGateway(){
-        return Math.random() > 0.2; // 80% success
+        return Math.random() > 0.1; // 90% success
     }
 }
 

@@ -43,17 +43,20 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllActiveProducts(pageable));
     }
 
+    @Operation(summary = "Create product by Admin")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@Parameter(description = "Product ID") @PathVariable Long id){
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
+    @Operation(summary = "Update product by Admin")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest product){
         return ResponseEntity.ok(productService.updateProduct(id, product));
     }
 
+    @Operation(summary = "Delete product by Admin")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id){
@@ -61,16 +64,19 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Search by product")
     @GetMapping("/search")
-    public ResponseEntity<Page<ProductResponse>> search(@RequestParam String name, Pageable pageable){
+    public ResponseEntity<Page<ProductResponse>> search(@RequestParam String name, @PageableDefault(size = 5, sort = "name", direction = Sort.Direction.ASC) @ParameterObject Pageable pageable){
         return ResponseEntity.ok(productService.search(name, pageable));
     }
+
+    @Operation(summary = "filter by product and price")
     @GetMapping("/filter")
     public ResponseEntity<Page<ProductResponse>> filter(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) BigDecimal minPrice,
-            Pageable pageable){
+            @PageableDefault(size = 5, sort = "name", direction = Sort.Direction.ASC) @ParameterObject Pageable pageable){
         return ResponseEntity.ok(productService.filter(name, categoryId, minPrice, pageable));
     }
 }

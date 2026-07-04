@@ -35,16 +35,20 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getAll());
     }
 
+    @Operation(summary = "Get category by ID")
+
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getById(@PathVariable Long id){
         return ResponseEntity.ok(categoryService.getById(id));
     }
 
+    @Operation(summary = "Update category by Admin")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request){
         return ResponseEntity.ok(categoryService.update(id, request));
     }
 
+    @Operation(summary = "Delete category by Admin")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
         categoryService.delete(id);

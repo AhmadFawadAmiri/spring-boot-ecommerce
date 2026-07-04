@@ -4,6 +4,7 @@ import com.project.ecommerce.user.dto.request.LoginRequest;
 import com.project.ecommerce.user.dto.request.RegisterRequest;
 import com.project.ecommerce.user.dto.response.LoginResponse;
 import com.project.ecommerce.user.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,13 +24,14 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Operation(summary = "Register a new user")
     @PostMapping("/register")
     public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request){
         authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
 
-
+    @Operation(summary = "Login if already registered")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request){
         return ResponseEntity.ok(authService.login(request));
