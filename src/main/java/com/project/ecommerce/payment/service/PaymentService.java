@@ -6,4 +6,5 @@ import com.project.ecommerce.payment.entity.PaymentMethod;
 public interface PaymentService {
     PaymentResponse pay(Long orderId, PaymentMethod method);
     PaymentResponse getByOrderId(Long orderId);
+    void processWebhook(Long paymentId, boolean success);
 }

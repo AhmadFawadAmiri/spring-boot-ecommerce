@@ -15,6 +15,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Transactional
 @Service
 public class PaymentServiceImpl implements PaymentService{
@@ -51,16 +53,11 @@ public class PaymentServiceImpl implements PaymentService{
         try{
             Thread.sleep(2000); // simulate bank delay
             boolean success = processFakeGateway();
-            if(success){
-                payment.setStatus(PaymentStatus.SUCCESS);
-                markOrderPaid(payment.getOrder());
-            }else {
-                payment.setStatus(PaymentStatus.FAILED);
-            }
-            paymentRepository.save(payment);
+            processWebhook(paymentId, success);
         } catch (InterruptedException e) {
             payment.setStatus(PaymentStatus.FAILED);
-            throw new RuntimeException(e);
+            paymentRepository.save(payment);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -70,7 +67,21 @@ public class PaymentServiceImpl implements PaymentService{
                 .orElseThrow(()-> new EntityNotFoundException("Payment not found")));
     }
 
- //-------------Private methods
+    @Override
+    public void processWebhook(Long paymentId, boolean success) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(()-> new EntityNotFoundException("Payment not found"));
+        if(payment.getStatus() != PaymentStatus.PENDING) {
+            return;
+        }
+        payment.setStatus(success ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
+        if(success){
+            markOrderPaid(payment.getOrder());
+        }
+        paymentRepository.save(payment);
+    }
+
+    //-------------Private methods
 
     private void validateDuplicate(Long orderId){
         if(paymentRepository.findByOrderId(orderId).isPresent()){
@@ -83,14 +94,13 @@ public class PaymentServiceImpl implements PaymentService{
         payment.setOrder(order);
         payment.setAmount(order.getTotalPrice());
         payment.setPaymentMethod(method);
-        payment.setStatus(PaymentStatus.PENDING);
+        //payment.setStatus(PaymentStatus.PENDING);
         return payment;
     }
 
     private Order getOrder(Long orderId){
-        Order order = orderRepository.findById(orderId)
+        return orderRepository.findById(orderId)
                 .orElseThrow(()->new EntityNotFoundException("Order not found"));
-        return order;
     }
 
     private void validateOrderForPayment(Order order){
