@@ -29,7 +29,7 @@ public class PaymentController {
     }
 
     @Operation(summary = "Get payment")
-    @GetMapping("/{orderId}")
+    @GetMapping("/order/{orderId}")
     public ResponseEntity<PaymentResponse> getByOrder(@PathVariable Long orderId){
         return ResponseEntity.ok(paymentService.getByOrderId(orderId));
     }
@@ -39,5 +39,12 @@ public class PaymentController {
     @GetMapping("/my-payments")
     public ResponseEntity<List<PaymentResponse>> getMyPayments(){
         return ResponseEntity.ok(paymentService.getMyPayments());
+    }
+
+    @Operation(summary = "Refund payment")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("{paymentId}/refund")
+    public ResponseEntity<PaymentResponse> refund(@PathVariable Long paymentId){
+        return ResponseEntity.ok(paymentService.refund(paymentId));
     }
 }

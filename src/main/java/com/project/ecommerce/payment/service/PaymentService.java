@@ -11,6 +11,6 @@ public interface PaymentService {
     PaymentResponse getByOrderId(Long orderId);
     void processWebhook(Long paymentId, boolean success);
     List<PaymentResponse> getMyPayments();
-//    PaymentResponse refund(Long paymentId);
+    PaymentResponse refund(Long paymentId);
 
 }

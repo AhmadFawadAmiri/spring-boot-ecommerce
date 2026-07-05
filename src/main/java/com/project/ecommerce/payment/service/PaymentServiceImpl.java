@@ -96,6 +96,24 @@ public class PaymentServiceImpl implements PaymentService{
         return payments.stream().map(paymentMapper::toResponse).toList();
     }
 
+    @Override
+    public PaymentResponse refund(Long paymentId) {
+        Payment payment = paymentRepository
+                .findById(paymentId).orElseThrow(()->new EntityNotFoundException("Payment not found"));
+        if(payment.getStatus() == PaymentStatus.REFUNDED){
+            throw new IllegalArgumentException("Payment already refunded");
+        }
+        if(payment.getStatus() != PaymentStatus.SUCCESS){
+            throw new IllegalArgumentException("Only successful payments can be refunded");
+        }
+        payment.setStatus(PaymentStatus.REFUNDED);
+        Order order = payment.getOrder();
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+        paymentRepository.save(payment);
+        return paymentMapper.toResponse(payment);
+    }
+
     //-------------Private methods
 
     private void validateDuplicate(Long orderId){

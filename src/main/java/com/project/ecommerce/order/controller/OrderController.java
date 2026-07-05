@@ -29,7 +29,7 @@ public class OrderController {
 
     @Operation(summary = "Get order by ID")
     @PreAuthorize("hasRole('ADMIN') or @orderSecurity.isOwner(#orderId)")
-    @GetMapping("/{orderId}")
+    @GetMapping("/oder/{orderId}")
     public ResponseEntity<OrderResponse> getById(@PathVariable Long orderId){
         return ResponseEntity.ok(orderService.getById(orderId));
     }
