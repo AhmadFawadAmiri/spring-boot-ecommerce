@@ -1,5 +1,6 @@
 package com.project.ecommerce.user.service;
 
+import com.project.ecommerce.notification.service.EmailService;
 import com.project.ecommerce.user.Role;
 import com.project.ecommerce.user.dto.request.LoginRequest;
 import com.project.ecommerce.user.dto.request.RegisterRequest;
@@ -8,6 +9,7 @@ import com.project.ecommerce.user.entity.User;
 import com.project.ecommerce.user.repository.UserRepository;
 import com.project.ecommerce.user.security.CustomUserDetails;
 import com.project.ecommerce.user.security.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,12 +22,14 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil, AuthenticationManager authenticationManager, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.authenticationManager = authenticationManager;
+        this.emailService = emailService;
     }
 
     @Override
@@ -38,8 +42,8 @@ public class AuthServiceImpl implements AuthService{
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
         user.setRole(Role.USER);
+        emailService.sendWelcomeNewUserEmail(user);
         userRepository.save(user);
-
     }
 
     @Override
@@ -51,6 +55,8 @@ public class AuthServiceImpl implements AuthService{
         );
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String token = jwtUtil.generateToken(userDetails.getUsername());
+        emailService.sendWelcomeEmail(userRepository.findByEmail(request.getEmail())
+                .orElseThrow(()->new EntityNotFoundException("User not found")));
         return new LoginResponse(token);
     }
 }

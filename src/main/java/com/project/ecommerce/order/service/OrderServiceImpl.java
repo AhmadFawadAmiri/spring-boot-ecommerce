@@ -1,6 +1,7 @@
 package com.project.ecommerce.order.service;
 
 import com.project.ecommerce.cart.repository.CartItemRepository;
+import com.project.ecommerce.notification.service.EmailService;
 import com.project.ecommerce.order.dto.response.OrderResponse;
 import com.project.ecommerce.order.entity.OrderStatus;
 import com.project.ecommerce.order.entity.Order;
@@ -32,14 +33,16 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
     private final CartItemRepository cartItemRepository;
+    private final EmailService emailService;
 
-    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, OrderMapper orderMapper, CartItemRepository cartItemRepository) {
+    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, OrderMapper orderMapper, CartItemRepository cartItemRepository, EmailService emailService) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.orderMapper = orderMapper;
         this.cartItemRepository = cartItemRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -87,6 +90,7 @@ public class OrderServiceImpl implements OrderService {
         //6. clear cart
         cart.getCartItems().clear();
         cartItemRepository.deleteAll(cart.getCartItems());
+        emailService.sendOrderConfirmationEmail(savedOrder);
         return orderMapper.toResponse(savedOrder);
     }
 

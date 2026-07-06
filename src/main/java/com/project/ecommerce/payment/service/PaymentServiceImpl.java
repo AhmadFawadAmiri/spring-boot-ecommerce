@@ -1,6 +1,7 @@
 package com.project.ecommerce.payment.service;
 
 import com.project.ecommerce.global.exception.DuplicateResourceException;
+import com.project.ecommerce.notification.service.EmailService;
 import com.project.ecommerce.order.entity.Order;
 import com.project.ecommerce.order.entity.OrderStatus;
 import com.project.ecommerce.order.repository.OrderRepository;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Service
@@ -28,12 +28,14 @@ public class PaymentServiceImpl implements PaymentService{
     private final OrderRepository orderRepository;
     private final PaymentMapper paymentMapper;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, PaymentMapper paymentMapper, UserRepository userRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, OrderRepository orderRepository, PaymentMapper paymentMapper, UserRepository userRepository, EmailService emailService) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.paymentMapper = paymentMapper;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -53,16 +55,12 @@ public class PaymentServiceImpl implements PaymentService{
     }
     @Async
     public void processPaymentAsync(Long paymentId){
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(()->new EntityNotFoundException("Payment not found"));
         //-----MOCK payment gateway (simulate external gateway)
         try{
             Thread.sleep(2000); // simulate bank delay
             boolean success = processFakeGateway();
             processWebhook(paymentId, success);
         } catch (InterruptedException e) {
-            payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
             Thread.currentThread().interrupt();
         }
     }
@@ -85,6 +83,7 @@ public class PaymentServiceImpl implements PaymentService{
             markOrderPaid(payment.getOrder());
         }
         paymentRepository.save(payment);
+        emailService.sendPaymentSuccessEmail(payment);
     }
 
     @Override
@@ -111,6 +110,7 @@ public class PaymentServiceImpl implements PaymentService{
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
         paymentRepository.save(payment);
+        emailService.sendRefundEmail(payment);
         return paymentMapper.toResponse(payment);
     }
 
