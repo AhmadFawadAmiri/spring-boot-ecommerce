@@ -13,6 +13,7 @@ import com.project.ecommerce.product.repository.ProductRepository;
 import com.project.ecommerce.cart.entity.Cart;
 import com.project.ecommerce.cart.entity.CartItem;
 import com.project.ecommerce.cart.repository.CartRepository;
+import com.project.ecommerce.product.service.InventoryService;
 import com.project.ecommerce.user.entity.User;
 import com.project.ecommerce.user.repository.UserRepository;
 import com.project.ecommerce.user.security.SecurityUtils;
@@ -34,8 +35,9 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final CartItemRepository cartItemRepository;
     private final EmailService emailService;
+    private final InventoryService inventoryService;
 
-    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, OrderMapper orderMapper, CartItemRepository cartItemRepository, EmailService emailService) {
+    public OrderServiceImpl(CartRepository cartRepository, OrderRepository orderRepository, ProductRepository productRepository, UserRepository userRepository, OrderMapper orderMapper, CartItemRepository cartItemRepository, EmailService emailService, InventoryService inventoryService) {
         this.cartRepository = cartRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
@@ -43,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
         this.orderMapper = orderMapper;
         this.cartItemRepository = cartItemRepository;
         this.emailService = emailService;
+        this.inventoryService = inventoryService;
     }
 
     @Transactional
@@ -183,6 +186,7 @@ public class OrderServiceImpl implements OrderService {
     private void reduceStock(Product product, int quantity){
         product.setStockQuantity(product.getStockQuantity()-quantity);
         productRepository.save(product);
+        inventoryService.checkLowStock(product);
     }
 
     private void validateCart(Cart cart){

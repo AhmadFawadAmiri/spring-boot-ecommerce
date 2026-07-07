@@ -2,7 +2,9 @@ package com.project.ecommerce.notification.service;
 
 import com.project.ecommerce.order.entity.Order;
 import com.project.ecommerce.payment.entity.Payment;
+import com.project.ecommerce.product.entity.Product;
 import com.project.ecommerce.user.entity.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -10,6 +12,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 @Service
 public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mailSender;
+    @Value("${inventory.alert.email}")
+    private String inventoryAlertEmail;
 
     public EmailServiceImpl(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -48,7 +52,6 @@ public class EmailServiceImpl implements EmailService {
                 
                 """.formatted(user.getUsername());
         sendEmail(user.getEmail(), subject, body);
-
     }
 
     @Override
@@ -75,7 +78,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void sendRefundEmail(Payment payment) {
-        String subject = "Payment Successful";
+        String subject = "Payment Refunded";
         String body = """
                 Hello %s,
                 
@@ -110,6 +113,15 @@ public class EmailServiceImpl implements EmailService {
         sendEmail(user.getEmail(), subject, body);
     }
 
+    public void emailLowStock(Product product){
+        String subject = "Low Stock Alert";
+        String body = """
+                Product: %s
+                Current stock: %d
+                """.formatted(product.getName() ,product.getStockQuantity());
+        sendEmail(inventoryAlertEmail, subject, body);
+    }
+
     // private methods
     private void sendEmail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -117,6 +129,13 @@ public class EmailServiceImpl implements EmailService {
         message.setSubject(subject);
         message.setText(body);
         mailSender.send(message);
+        /// /
+        System.out.println("SENDING EMAIL:");
+        System.out.println("FROM (SMTP USER): " + mailSender);
+        System.out.println("TO: " + to);
+        System.out.println("SUBJECT: " + subject);
+        System.out.println("EMAIL ENV = " + System.getenv("EMAIL"));
+        System.out.println("APP PASSWORD SET = " + (System.getenv("APP_PASSWORD") != null));
     }
 
 
