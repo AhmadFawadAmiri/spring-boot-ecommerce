@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,4 +18,5 @@ public class ProductResponse {
     private Long categoryId;
     private String categoryName;
     private LocalDateTime createdAt;
+    List<ProductImageResponse> images;
 }

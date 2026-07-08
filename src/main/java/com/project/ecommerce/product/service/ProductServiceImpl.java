@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -23,11 +24,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final FileStorageService fileStorageService;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, FileStorageService fileStorageService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -118,8 +121,13 @@ public class ProductServiceImpl implements ProductService {
                 .map(productMapper::toResponse);
 
     }
-
-
+    @Transactional
+    @Override
+    public void uploadImage(Long productId, MultipartFile file) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(()->new EntityNotFoundException("Product not found"));
+        fileStorageService.store(file, product);
+    }
 
 
 }

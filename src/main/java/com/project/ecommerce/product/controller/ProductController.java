@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllActiveProducts(pageable));
     }
 
-    @Operation(summary = "Create product by Admin")
+    @Operation(summary = "Get product by Admin")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@Parameter(description = "Product ID") @PathVariable Long id){
         return ResponseEntity.ok(productService.getProductById(id));
@@ -78,5 +79,12 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @PageableDefault(size = 5, sort = "name", direction = Sort.Direction.ASC) @ParameterObject Pageable pageable){
         return ResponseEntity.ok(productService.filter(name, categoryId, minPrice, pageable));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{productId}/images")
+    public ResponseEntity<Void> uploadImage(@PathVariable Long productId, @RequestParam("file")MultipartFile file){
+        productService.uploadImage(productId, file);
+        return ResponseEntity.ok().build();
     }
 }

@@ -10,6 +10,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,9 +42,15 @@ public class Product {
     public void prePersist(){
         createdAt = LocalDateTime.now();
     }
-    @Column(name = "imageUrl")
-    public String imageUrl;
+//    @Column(name = "imageUrl")
+//    public String imageUrl;
     @Column(name = "active")
     private boolean active;
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ProductImage> images = new ArrayList<>();
 }
 

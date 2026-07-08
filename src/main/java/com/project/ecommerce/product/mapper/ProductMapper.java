@@ -1,10 +1,13 @@
 package com.project.ecommerce.product.mapper;
 
 import com.project.ecommerce.product.dto.request.ProductRequest;
+import com.project.ecommerce.product.dto.response.ProductImageResponse;
 import com.project.ecommerce.product.dto.response.ProductResponse;
 import com.project.ecommerce.category.entity.Category;
 import com.project.ecommerce.product.entity.Product;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class ProductMapper {
@@ -21,6 +24,13 @@ public class ProductMapper {
 
     public ProductResponse toResponse(Product product){
         ProductResponse response = new ProductResponse();
+        List<ProductImageResponse> images = product.getImages()
+                        .stream()
+                        .map(image -> new ProductImageResponse(
+                                image.getId(),
+                                image.getFileUrl()
+                        ))
+                                        .toList();
         response.setId(product.getId());
         response.setName(product.getName());
         response.setDescription(product.getDescription());
@@ -31,6 +41,7 @@ public class ProductMapper {
             response.setCategoryName(product.getCategory().getName());
         }
         response.setCreatedAt(product.getCreatedAt());
+        response.setImages(images);
         return response;
     }
 

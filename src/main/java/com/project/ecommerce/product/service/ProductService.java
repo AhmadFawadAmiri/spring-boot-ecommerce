@@ -4,6 +4,7 @@ import com.project.ecommerce.product.dto.request.ProductRequest;
 import com.project.ecommerce.product.dto.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 
@@ -25,4 +26,5 @@ public interface ProductService {
 
     Page<ProductResponse> filter(String name, Long categoryId, BigDecimal minPrice, Pageable pageable);
 
+    void uploadImage(Long productId, MultipartFile file);
 }
